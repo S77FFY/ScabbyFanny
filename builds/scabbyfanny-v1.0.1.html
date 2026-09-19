@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="app-repo" content="ScabbyFanny">
+<meta name="app-version" content="1.0.1">
+<title>SCABBY : FANNY &middot; v1.0.1 &middot; S77FFY</title>
+<style>
+/* ============================================================
+   SCABBY : FANNY v1.0.1 — S77FFY
+   Old Maid, crew rules. 49 cards, three queens pulled, the Queen
+   of Hearts left without a match. Design lifted from NOMS so the
+   two sit together on the Grid.
+   ============================================================ */
+/* Two skins, same as NOMS. Neon is the default; Felt is the old table. */
+:root{
+  --felt:#05070f; --felt2:#0d1430; --felt-edge:#01020a;
+  --purple:#a855f7; --purple-dk:#6d28d9; --panel:#0c1226;
+  --bone:#e9f2ff; --bone-dim:#8fa3c8; --paper:#f7f1df;
+  --ink:#101827; --ink-soft:#5b6b8a;
+  --gold:#22d3ee; --gold-hi:#8bf6ff; --gold-dk:#0b7f96;
+  --red:#a855f7; --red-hi:#d8a2ff; --green:#0f9d58; --green-hi:#5df2a8;
+  --line:rgba(139,246,255,.16);
+  --cw:clamp(68px,21vw,112px);
+}
+body.theme-felt{
+  background-image:radial-gradient(130% 90% at 50% -10%, var(--felt2) 0%, var(--felt) 52%, var(--felt-edge) 100%);
+  --felt:#241338; --felt2:#331a4f; --felt-edge:#140a22;
+  --purple:#6c35cf; --purple-dk:#3d1a7e; --panel:#2b1546;
+  --bone:#f4ecd9; --bone-dim:#cfc2a4; --paper:#f7f1df;
+  --ink:#2a1733; --ink-soft:#6b5a72;
+  --gold:#d9a94c; --gold-hi:#f2c96e; --gold-dk:#8a6520;
+  --red:#c0392b; --red-hi:#ff7a6b; --green:#2e7d4f; --green-hi:#69c98f;
+  --line:rgba(244,236,217,.16);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color:var(--bone);
+  background:
+    radial-gradient(120% 80% at 12% -8%, rgba(168,85,247,.30) 0%, rgba(168,85,247,0) 55%),
+    radial-gradient(110% 70% at 88% 8%, rgba(34,211,238,.22) 0%, rgba(34,211,238,0) 55%),
+    radial-gradient(130% 90% at 50% -10%, var(--felt2) 0%, var(--felt) 52%, var(--felt-edge) 100%);
+  background-attachment:fixed;
+  touch-action:manipulation;
+  min-height:100%;
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px;border-radius:6px}
+input{font:inherit}
+
+/* ---------- screens ---------- */
+.screen{position:fixed;inset:0;display:none;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+.screen.on{display:flex}
+.pad{width:100%;max-width:560px;margin:0 auto;padding:22px 18px 40px}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-block;padding:13px 22px;border-radius:12px;font-weight:700;letter-spacing:.02em;
+  background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:#04121a;
+  border:1px solid var(--gold-dk);
+  box-shadow:0 3px 10px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.45),0 0 22px rgba(34,211,238,.32);
+}
+body.theme-felt .btn{
+  background:linear-gradient(180deg,var(--gold-hi),#c9963a);color:#241338;
+  box-shadow:0 3px 10px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.5);
+}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.4;transform:none;cursor:default}
+.btn.ghost{background:rgba(244,236,217,.06);color:var(--bone);border:1px solid var(--line);box-shadow:none}
+/* has to out-rank body.theme-felt .btn above, or every button goes gold */
+body.theme-felt .btn.ghost{background:rgba(244,236,217,.06);color:var(--bone);
+  border:1px solid var(--line);box-shadow:none}
+.btn.wide{display:block;width:100%;text-align:center}
+.btn.sm{padding:9px 14px;font-size:14px;border-radius:10px}
+.iconbtn{padding:6px 12px;border:1px solid var(--line);border-radius:10px;background:rgba(244,236,217,.06);font-size:15px;line-height:1}
+
+/* ---------- title screen ---------- */
+#scr-title{align-items:center;justify-content:center;text-align:center}
+.mark{position:relative;border:1px solid var(--gold);border-radius:20px;padding:30px 30px 24px;margin-bottom:30px;
+  background:linear-gradient(160deg,rgba(34,211,238,.10),rgba(168,85,247,.12));
+  box-shadow:0 0 30px rgba(34,211,238,.28),inset 0 0 30px rgba(168,85,247,.14)}
+body.theme-felt .mark{border:3px double var(--gold);border-radius:16px;background:rgba(0,0,0,.18);box-shadow:none}
+.mark::before,.mark::after{position:absolute;font-size:15px;color:var(--gold)}
+.mark::before{content:'\2660  \2663';top:8px;left:12px;letter-spacing:6px}
+.mark::after{content:'\2665  \2666';bottom:8px;right:12px;letter-spacing:6px;color:var(--red-hi)}
+/* The name is too long to sit on one line on a phone, so it stacks with the
+   colon as a divider between the two words. */
+.mark h1{display:flex;flex-direction:column;align-items:center;
+  font-size:clamp(40px,15.5vw,72px);line-height:.94;letter-spacing:.08em;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-weight:800;
+  color:#fff;
+  text-shadow:0 0 6px #fff,0 0 18px var(--gold),0 0 42px var(--gold),0 0 78px var(--purple)}
+.mark h1 span{display:block;margin-right:-.08em}
+body.theme-felt .mark h1{font-family:Georgia,serif;font-weight:400;letter-spacing:.07em;
+  color:var(--bone);text-shadow:0 2px 0 rgba(0,0,0,.55),0 0 34px rgba(217,169,76,.28)}
+.mark h1 .col{font-size:.34em;line-height:1;margin:.06em 0 .02em;letter-spacing:0;
+  color:var(--red-hi);text-shadow:0 0 14px var(--red-hi)}
+.mark .suits{font-size:clamp(17px,4.5vw,22px);letter-spacing:14px;margin-right:-14px;margin-bottom:8px;color:var(--gold)}
+.mark .suits .r{color:var(--red-hi)}
+.mark .tagline{font-family:Georgia,serif;font-style:italic;color:var(--bone-dim);font-size:15px;margin-top:10px}
+.themerow{display:flex;gap:8px;justify-content:center;margin-top:16px}
+.themerow button{padding:7px 15px;border-radius:999px;border:1px solid var(--line);
+  background:rgba(255,255,255,.05);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--bone-dim)}
+.themerow button.sel{border-color:var(--gold);color:var(--gold-hi);background:rgba(34,211,238,.14)}
+.titlebtns{display:flex;flex-direction:column;gap:12px;width:min(320px,84vw)}
+.foot{margin-top:30px;font-size:12px;color:var(--bone-dim);letter-spacing:.14em;text-transform:uppercase}
+
+/* ---------- shared setup blocks ---------- */
+.h2{font-family:Georgia,serif;font-size:26px;letter-spacing:.04em;margin-bottom:4px}
+.sub{color:var(--bone-dim);font-size:14px;margin-bottom:20px}
+.lbl{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:22px 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chipbtn{padding:10px 16px;border-radius:999px;border:1px solid var(--line);background:rgba(244,236,217,.05);font-weight:600}
+.chipbtn.sel{border-color:var(--gold);background:rgba(217,169,76,.16);color:var(--gold-hi)}
+.addrow{display:flex;gap:8px;margin-top:10px}
+.addrow input{flex:1;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:10px;color:var(--bone);padding:11px 12px}
+.addrow input::placeholder{color:var(--bone-dim)}
+.addrow button{padding:0 18px;border-radius:10px;border:1px solid var(--gold-dk);background:rgba(217,169,76,.2);color:var(--gold-hi);font-weight:700}
+.stepper{display:flex;align-items:center;gap:14px}
+.stepper button{width:46px;height:46px;border-radius:12px;border:1px solid var(--line);background:rgba(244,236,217,.06);font-size:22px;font-weight:700}
+.stepper b{font-family:Georgia,serif;font-size:30px;min-width:44px;text-align:center}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;padding:11px 0;border:1px solid var(--line);border-radius:10px;background:rgba(244,236,217,.05);font-weight:700;font-size:16px}
+.seg button.sel{border-color:var(--gold);background:rgba(217,169,76,.18);color:var(--gold-hi)}
+.hint{font-size:13px;color:var(--bone-dim);margin-top:8px;font-style:italic}
+.tickrow{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:14px;cursor:pointer}
+.tickrow input{width:22px;height:22px;accent-color:var(--gold);flex:none}
+.setupfoot{margin-top:30px;display:flex;flex-direction:column;gap:10px}
+
+/* player picker, straight out of NOMS */
+.prow{display:flex;align-items:center;gap:10px;padding:7px 0}
+.obadge{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:rgba(244,236,217,.05);
+  font-weight:800;font-size:15px;flex:none;color:var(--bone-dim);
+  display:inline-flex;align-items:center;justify-content:center}
+.obadge.me{font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.prow.sel .obadge{border-color:var(--gold);background:rgba(217,169,76,.2);color:var(--gold-hi)}
+.prow input{flex:1;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:10px;color:var(--bone);padding:10px 12px}
+.prow.sel input{border-color:rgba(217,169,76,.5)}
+
+/* ---------- the club table, from above ---------- */
+.tabletop{position:relative;width:min(96vw,520px);aspect-ratio:1.85/1;margin:6px auto 12px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#3a3a40 0%,#1c1c20 18%,#0e0e11 55%,#232327 100%);
+  box-shadow:0 20px 44px rgba(0,0,0,.6),
+             inset 0 4px 9px rgba(255,255,255,.20),
+             inset 0 -8px 18px rgba(0,0,0,.75);
+}
+.tabletop .wood{position:absolute;inset:11.5% 6.2%;border-radius:999px;
+  background:
+    repeating-linear-gradient(96deg, rgba(0,0,0,.05) 0 3px, rgba(255,255,255,.035) 3px 7px),
+    linear-gradient(170deg,#c98a4b 0%,#b3762f 40%,#9a5f22 100%);
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.45), inset 0 4px 12px rgba(0,0,0,.35),
+             0 2px 8px rgba(0,0,0,.5)}
+.tabletop .baize{position:absolute;inset:30% 17%;border-radius:999px;
+  background:
+    repeating-linear-gradient(45deg, rgba(0,0,0,.07) 0 2px, rgba(255,255,255,.05) 2px 5px),
+    repeating-linear-gradient(-45deg, rgba(0,0,0,.05) 0 2px, rgba(255,255,255,.03) 2px 5px),
+    linear-gradient(170deg,#e2404e 0%,#cf2f3d 45%,#ab2130 100%);
+  box-shadow:inset 0 0 22px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.5),
+             inset 0 0 0 2px rgba(0,0,0,.18)}
+.cup{position:absolute;width:4.6%;aspect-ratio:1;transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:linear-gradient(160deg,#e8ecf0,#9aa3ad 45%,#4d545c 100%);
+  box-shadow:inset 0 2px 3px rgba(255,255,255,.65), inset 0 -2px 4px rgba(0,0,0,.5),
+             0 1px 3px rgba(0,0,0,.6);z-index:2}
+.cup::after{content:'';position:absolute;inset:13%;border-radius:999px;
+  background:radial-gradient(closest-side at 40% 30%, #2b3036, #101317)}
+.tseat{position:absolute;transform:translate(-50%,-50%);text-align:center;z-index:4}
+.tseat .tn{font-size:12px;font-weight:700;line-height:1.15;
+  background:rgba(4,8,16,.82);border:1px solid var(--line);border-radius:999px;padding:4px 9px;
+  display:inline-block;max-width:86px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tseat.hot .tn{border-color:var(--gold);color:var(--gold-hi);background:rgba(34,211,238,.24);
+  box-shadow:0 0 18px rgba(34,211,238,.6)}
+.tseat.you .tn{border-color:var(--gold)}
+#dealSlot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:5}
+#dealSlot .card{--cw:clamp(44px,10.5vw,62px)}
+
+/* ---------- cards ---------- */
+.card{
+  position:relative;width:var(--cw);height:calc(var(--cw)*1.4);border-radius:9%;
+  background:#fbf7ec;border:1px solid #cfc2a4;color:#221b26;
+  box-shadow:0 2px 6px rgba(0,0,0,.45);flex:none;user-select:none;
+  font-size:var(--cw); /* children size in fractions of card width */
+}
+.card.red{color:#c0392b}
+.corner{position:absolute;top:4%;left:6%;text-align:center;line-height:1.02}
+.corner b{display:block;font-family:Georgia,serif;font-size:.21em;font-weight:700}
+.corner i{display:block;font-style:normal;font-size:.17em}
+.corner.br{top:auto;left:auto;bottom:4%;right:6%;transform:rotate(180deg)}
+.pip{position:absolute;transform:translate(-50%,-50%);font-size:.22em;line-height:1}
+.pip.f{transform:translate(-50%,-50%) rotate(180deg)}
+.apip{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:.52em;line-height:1}
+.apip.asp{font-size:.66em;text-shadow:0 0 1px #221b26}
+.court{position:absolute;inset:16% 18%;border:2px double currentColor;border-radius:8%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2%}
+.court .cl{font-family:Georgia,serif;font-size:.4em;font-weight:700;line-height:1}
+.court .cs{font-size:.2em;line-height:1}
+.card.back{
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.28) 0 5.5%, rgba(255,255,255,0) 6.5%),
+    repeating-linear-gradient(45deg, rgba(139,246,255,.20) 0 1.5px, transparent 1.5px 7px),
+    repeating-linear-gradient(-45deg, rgba(139,246,255,.20) 0 1.5px, transparent 1.5px 7px),
+    linear-gradient(155deg,#7b3ff2,#1b2ea8);
+  border:2px solid #cfe9ff;
+}
+body.theme-felt .card.back{
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.25) 0 5.5%, rgba(255,255,255,0) 6.5%),
+    repeating-linear-gradient(45deg, rgba(255,255,255,.15) 0 1.5px, transparent 1.5px 7px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,.15) 0 1.5px, transparent 1.5px 7px),
+    linear-gradient(155deg,#7b40e2,#4a1e99);
+  border:2px solid #f4ecd9;
+}
+.card.back::after{content:'';position:absolute;inset:7%;border:1.5px solid rgba(255,255,255,.55);border-radius:8%}
+.flipin{animation:flipin .35s ease-out}
+@keyframes flipin{from{transform:rotateY(88deg)}to{transform:rotateY(0)}}
+.dealin{animation:dealin .3s ease-out both}
+@keyframes dealin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.pop{animation:pop .35s ease-out}
+@keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
+.goaway{animation:goaway .34s ease-in both}
+@keyframes goaway{to{transform:translateY(-38px) scale(.72);opacity:0}}
+
+.shuffling{position:relative;width:calc(var(--cw)*2.4);height:calc(var(--cw)*1.5);margin:0 auto}
+.shuffling .card{position:absolute;left:50%;top:50%;margin:calc(var(--cw)*-0.7) 0 0 calc(var(--cw)*-0.5)}
+.shuffling .card:nth-child(odd){animation:shufL .4s ease-in-out infinite alternate}
+.shuffling .card:nth-child(even){animation:shufR .4s ease-in-out infinite alternate}
+.shuffling .card:nth-child(2){animation-delay:.08s}
+.shuffling .card:nth-child(3){animation-delay:.16s}
+.shuffling .card:nth-child(4){animation-delay:.24s}
+.shuffling .card:nth-child(5){animation-delay:.32s}
+@keyframes shufL{from{transform:translateX(-4%) rotate(0)}to{transform:translateX(-44%) rotate(-8deg)}}
+@keyframes shufR{from{transform:translateX(4%) rotate(0)}to{transform:translateX(44%) rotate(8deg)}}
+
+/* ---------- play screen ---------- */
+#scr-play{overflow:hidden}
+.topbar{display:flex;align-items:center;gap:8px;padding:calc(9px + env(safe-area-inset-top)) 12px 8px;flex-wrap:wrap}
+.chip{padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(0,0,0,.28);font-size:13px;font-weight:600}
+.spacer{flex:1}
+
+.seats{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;padding:2px 8px 6px}
+.seat{min-width:62px;padding:6px 7px 7px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.26);
+  text-align:center;transition:border-color .15s,box-shadow .15s,opacity .3s}
+.seat.active{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 0 18px rgba(34,211,238,.45)}
+.seat.offering{border-color:var(--red-hi);box-shadow:0 0 0 1px var(--red-hi)}
+.seat.out{opacity:.34}
+.seat .snm{font-weight:700;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:92px}
+.seat .snc{font-size:11px;color:var(--bone-dim);margin-top:2px}
+.seat.out .snc{color:var(--green-hi)}
+.seat .you{color:var(--gold-hi)}
+
+/* The offered fan is the thing you are looking at, so it sits in the middle of
+   the screen rather than stranded up under the seats. */
+.playbody{flex:1;display:flex;flex-direction:column;justify-content:center;
+  min-height:0;overflow-y:auto;padding:6px 0}
+.offerzone{padding:4px 8px 2px;text-align:center}
+.olbl{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;min-height:15px}
+/* Rows are built by layoutFan, which sets --cw and the overlap in pixels to
+   suit the screen — so no card widths or negative margins live in here. */
+.fanrow{display:flex;justify-content:center;margin-bottom:3px}
+.fanrow .card{transition:transform .12s}
+.fanrow .card.pick,.fanrow .card.tap{cursor:pointer}
+.fanrow .card.pick:active{transform:translateY(-8px)}
+.fanrow .card.sel{transform:translateY(-15px);box-shadow:0 8px 16px rgba(0,0,0,.55),0 0 0 2px var(--gold-hi)}
+.fanrow .card.match{box-shadow:0 4px 10px rgba(0,0,0,.5),0 0 0 2px var(--green-hi)}
+.fanrow .card.tell{animation:tell 1.05s ease-in-out infinite}
+@keyframes tell{0%,72%,100%{transform:translateY(0) rotate(0)}80%{transform:translateY(-3px) rotate(-1.4deg)}88%{transform:translateY(-1px) rotate(1.1deg)}}
+
+.msg{font-family:Georgia,serif;font-style:italic;font-size:15.5px;color:var(--bone-dim);
+  margin:8px 10px 4px;text-align:center;min-height:40px}
+.msg.gold{color:var(--gold-hi);font-style:normal}
+.msg b{color:var(--bone);font-style:normal}
+
+.me{padding:2px 8px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(0,0,0,.2)}
+.meinfo{display:flex;justify-content:center;align-items:center;gap:8px;font-size:12px;color:var(--bone-dim);margin:7px 0 6px;flex-wrap:wrap}
+.meinfo b{color:var(--bone)}
+/* a fixed red, not the skin's accent — this one is a warning in both skins */
+.meinfo .warnq{color:#ff6a5a;font-weight:700}
+.actbar{display:flex;gap:8px;justify-content:center;margin-top:9px}
+.actbar .btn{flex:1;max-width:170px;text-align:center}
+
+/* ---------- curtain ---------- */
+#scr-curtain{align-items:center;justify-content:center;text-align:center;
+  background:radial-gradient(80% 60% at 50% 45%, #150b2b 0%, #08060f 60%, #03030a 100%)}
+.curtsub{font-size:13px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.curtname{font-family:Georgia,serif;font-size:clamp(44px,15vw,96px);line-height:1;color:var(--bone);
+  text-shadow:0 3px 0 rgba(0,0,0,.5),0 0 44px rgba(34,211,238,.4);margin-bottom:10px;padding:0 14px}
+.curtnote{color:var(--bone-dim);font-size:14px;font-style:italic;margin-bottom:30px;padding:0 24px}
+
+/* ---------- the reveal: blood red on black ---------- */
+#punch{position:fixed;inset:0;z-index:58;display:none;align-items:center;justify-content:center;overflow:hidden;
+  background:radial-gradient(70% 60% at 50% 45%, #2c0306 0%, #140102 55%, #000 100%)}
+#punch.on{display:flex}
+.burst{position:absolute;inset:0;width:100%;height:100%;display:block}
+.burst .rays{fill:rgba(190,16,16,.22)}
+.punchwrap{position:relative;text-align:center;padding:0 16px}
+.punchname{font-family:Georgia,serif;font-weight:700;font-size:clamp(40px,14vw,140px);line-height:.92;
+  letter-spacing:.02em;color:#fff4f2;text-transform:uppercase;
+  text-shadow:4px 4px 0 #9b0000, 8px 8px 0 #000, 0 0 60px rgba(255,26,26,.62);
+  transform:rotate(-4deg);animation:slam .5s cubic-bezier(.2,1.6,.35,1) both}
+@keyframes slam{0%{transform:rotate(-4deg) scale(2.6);opacity:0}60%{transform:rotate(-4deg) scale(.93);opacity:1}100%{transform:rotate(-4deg) scale(1)}}
+.punchsub{margin-top:14px;font-family:Georgia,serif;font-size:clamp(14px,3.8vw,24px);letter-spacing:.22em;
+  text-transform:uppercase;color:#ff5647;animation:slam .5s .16s cubic-bezier(.2,1.6,.35,1) both}
+.punchcard{margin-top:20px;display:flex;justify-content:center;animation:slideup .55s .3s cubic-bezier(.2,1.15,.35,1) both}
+@keyframes slideup{from{transform:translateY(90vh) rotate(-14deg);opacity:0}to{transform:translateY(0) rotate(0);opacity:1}}
+.punchcard .card{--cw:clamp(78px,25vw,150px);box-shadow:0 0 0 1px #9b0000,0 10px 34px rgba(0,0,0,.8),0 0 60px rgba(255,26,26,.35)}
+.punchtap{position:absolute;bottom:calc(22px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;
+  font-size:13px;color:#b3625c;letter-spacing:.14em;text-transform:uppercase}
+
+/* ---------- round flash ---------- */
+#flash{position:fixed;inset:0;z-index:55;display:none;align-items:center;justify-content:center;
+  background:radial-gradient(80% 60% at 50% 50%, #1b1038, #060812);text-align:center}
+#flash.on{display:flex;animation:flashfade .3s ease-out}
+@keyframes flashfade{from{opacity:0}to{opacity:1}}
+#flash .fin{animation:flashpop .45s cubic-bezier(.2,1.3,.4,1) both;padding:0 18px}
+@keyframes flashpop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+#flash .fsuits{font-size:20px;letter-spacing:12px;margin-right:-12px;color:var(--gold);margin-bottom:18px}
+#flash .fsuits .r{color:var(--red-hi)}
+#flash .fbig{font-family:Georgia,serif;font-size:clamp(40px,13vw,86px);line-height:1;letter-spacing:.04em;
+  color:var(--bone);text-shadow:0 3px 0 rgba(0,0,0,.5),0 0 44px rgba(217,169,76,.35)}
+#flash .fsub{font-family:Georgia,serif;font-style:italic;font-size:clamp(15px,4.4vw,22px);color:var(--gold-hi);margin-top:14px}
+
+/* ---------- rules ---------- */
+.ruletxt p{margin-bottom:11px;font-size:14.5px;line-height:1.56;color:var(--bone-dim)}
+.ruletxt p b{color:var(--bone)}
+.ruletxt .dt{display:flex;gap:10px;font-size:14px;line-height:1.5;margin-bottom:9px;color:var(--bone-dim)}
+.ruletxt .dt b{color:var(--gold-hi);flex:none;width:76px}
+
+/* ---------- toast / version stamp ---------- */
+#vtag{position:fixed;left:8px;bottom:calc(5px + env(safe-area-inset-bottom));z-index:70;
+  font-size:10px;letter-spacing:.1em;color:var(--bone-dim);opacity:.32;pointer-events:none;
+  font-variant-numeric:tabular-nums}
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;
+  background:var(--bone);color:var(--ink);padding:11px 18px;border-radius:999px;font-weight:600;font-size:14px;
+  box-shadow:0 6px 20px rgba(0,0,0,.5);transition:all .25s;z-index:60;pointer-events:none;max-width:88vw;text-align:center}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= TITLE ================= -->
+<div id="scr-title" class="screen on">
+  <div class="mark">
+    <div class="suits">&#9824;<span class="r">&#9829;</span><span class="r">&#9830;</span>&#9827;</div>
+    <h1><span>SCABBY</span><span class="col">&#58;</span><span>FANNY</span></h1>
+    <div class="tagline">don&rsquo;t get left with her</div>
+    <div class="themerow" id="themeRow">
+      <button data-th="neon" class="sel">Neon</button><button data-th="felt">Felt</button>
+    </div>
+  </div>
+  <div class="titlebtns">
+    <button class="btn wide" id="btnGoCPU">Play the CPUs</button>
+    <button class="btn ghost wide" id="btnGoPass">Pass the phone</button>
+    <button class="btn ghost wide" id="btnGoRules">How it plays</button>
+  </div>
+  <div class="foot">SCABBY : FANNY v1.0.1 &middot; S77FFY</div>
+</div>
+
+<!-- ================= CPU SETUP ================= -->
+<div id="scr-setup-cpu" class="screen">
+  <div class="pad">
+    <div class="h2">Play the CPUs</div>
+    <div class="sub">Size up the table, write the names in, choose how sharp they are.</div>
+
+    <div class="lbl">Table size</div>
+    <div class="stepper">
+      <button id="sizeMinus" aria-label="Fewer players">&minus;</button>
+      <b id="sizeVal">4</b>
+      <button id="sizePlus" aria-label="More players">+</button>
+    </div>
+    <div class="hint">You plus CPUs. 2&ndash;7 at the table.</div>
+
+    <div class="lbl">Names</div>
+    <div id="cpuRows"></div>
+    <div class="hint">Top seat is you. Leave one blank and it goes by its seat number.</div>
+
+    <div class="lbl">CPU difficulty</div>
+    <div class="seg" id="diffSeg">
+      <button data-d="1">1</button><button data-d="2">2</button><button data-d="3" class="sel">3</button><button data-d="4">4</button><button data-d="5">5</button>
+    </div>
+    <div class="hint" id="diffHint"></div>
+
+    <label class="tickrow"><input type="checkbox" id="autoBox"><span>Clear my pairs for me</span></label>
+    <div class="hint">Off means you spot your own pairs and tap them out &mdash; on means they drop the moment they land.</div>
+
+    <div class="setupfoot">
+      <button class="btn wide" id="btnStartCPU">Deal &rarr;</button>
+      <button class="btn ghost wide" data-back="1">Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PASS SETUP ================= -->
+<div id="scr-setup-pass" class="screen">
+  <div class="pad">
+    <div class="h2">Pass the phone</div>
+    <div class="sub">One handset round the table. Write everybody in, in seating order.</div>
+
+    <div class="lbl">Players</div>
+    <div class="stepper">
+      <button id="passMinus" aria-label="Fewer players">&minus;</button>
+      <b id="passVal">4</b>
+      <button id="passPlus" aria-label="More players">+</button>
+    </div>
+    <div class="hint">2&ndash;7 at the table.</div>
+
+    <div class="lbl">Names, in seating order</div>
+    <div id="passRows"></div>
+    <div class="hint">Seat 1, then whoever is on their left, and so on round.</div>
+
+    <div class="lbl">Who deals?</div>
+    <div class="chips" id="dealerChips"></div>
+    <div class="hint">The dealer offers their hand first &mdash; the player on their left draws.</div>
+
+    <label class="tickrow"><input type="checkbox" id="autoBox2"><span>Clear pairs automatically</span></label>
+
+    <div class="setupfoot">
+      <button class="btn wide" id="btnStartPass">Deal &rarr;</button>
+      <button class="btn ghost wide" data-back="1">Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DEAL ================= -->
+<div id="scr-deal" class="screen">
+  <div class="pad" style="display:flex;flex-direction:column;align-items:center">
+    <div class="h2" style="margin-top:12px">Dealing</div>
+    <div class="sub" id="dealSub">Three queens out. The Queen of Hearts stays in.</div>
+    <div class="tabletop" id="dealTable">
+      <div class="wood"></div>
+      <div class="baize"></div>
+      <div id="dealSeats"></div>
+      <div id="dealSlot"></div>
+    </div>
+    <div class="msg" id="dealMsg">&nbsp;</div>
+  </div>
+</div>
+
+<!-- ================= PLAY ================= -->
+<div id="scr-play" class="screen">
+  <div class="topbar">
+    <div class="chip" id="cLeft"></div>
+    <div class="chip" id="cPairs"></div>
+    <div class="spacer"></div>
+    <button class="iconbtn" id="btnQuit">quit</button>
+  </div>
+  <div class="seats" id="seats"></div>
+  <div class="playbody">
+    <div class="offerzone">
+      <div class="olbl" id="offerLbl">&nbsp;</div>
+      <div id="offerFan"></div>
+    </div>
+    <div class="msg" id="msg">&nbsp;</div>
+  </div>
+  <div class="me">
+    <div class="meinfo" id="meInfo"></div>
+    <div id="hand"></div>
+    <div class="actbar" id="actBar"></div>
+  </div>
+</div>
+
+<!-- ================= CURTAIN ================= -->
+<div id="scr-curtain" class="screen">
+  <div class="curtsub">pass the phone to</div>
+  <div class="curtname" id="curtName"></div>
+  <div class="curtnote" id="curtNote"></div>
+  <button class="btn" id="btnCurtGo">I&rsquo;ve got it &rarr;</button>
+</div>
+
+<!-- ================= RULES ================= -->
+<div id="scr-rules" class="screen">
+  <div class="pad ruletxt">
+    <div class="h2">How it plays</div>
+    <div class="sub">Old Maid, crew rules.</div>
+
+    <p><b>The deck.</b> Three queens come out &mdash; spades, diamonds, clubs. The Queen of Hearts stays in with
+    nobody to match her. That leaves <b>49 cards: 24 pairs and her</b>.</p>
+    <p><b>The deal.</b> All 49 go out one at a time, starting left of the dealer. Hands come out uneven &mdash;
+    that&rsquo;s the game, not a bug. Everyone throws out the pairs they were dealt.</p>
+    <p><b>The play.</b> The dealer fans their hand face down to the player on their left, who takes one
+    blind. Pair it, bin it. That player then offers their own hand to <i>their</i> left, and round it goes.
+    Empty your hand and you&rsquo;re out, safe.</p>
+    <p><b>The end.</b> Last one holding the Queen of Hearts is stuck with her, and whatever that costs at
+    your table is between you and them.</p>
+
+    <div class="lbl">Where the skill is</div>
+    <p>Drawing is blind, so the game is won and lost on <b>tells</b> &mdash; the same as at a real table.
+    When somebody offers you their fan, watch for a card that twitches. That&rsquo;s their nerves showing.
+    The better the player, the less they leak, and the sharp ones will fake a twitch to send you the wrong way.</p>
+    <p>You leak too. Leaving the Queen on either end of your fan and offering it up unshuffled is the oldest
+    tell there is, and so is sitting there thinking about it. <b>Sort</b> your hand to find pairs fast, then
+    <b>shuffle</b> before you offer &mdash; a sorted fan is a readable fan.</p>
+
+    <div class="lbl">The five levels</div>
+    <div class="dt"><b>1 Daft</b><span>Never shuffles, shoves the Queen to one end, and telegraphs it nearly every time.</span></div>
+    <div class="dt"><b>2 Slack</b><span>Shuffles now and again. Still leaks about half the time.</span></div>
+    <div class="dt"><b>3 Regular</b><span>Shuffles most offers, the odd tell, will occasionally bluff one.</span></div>
+    <div class="dt"><b>4 Sharp</b><span>Shuffles every time, barely leaks, bluffs, and notices when you do.</span></div>
+    <div class="dt"><b>5 Shark</b><span>Never leaks. Reads your habits and plants the Queen exactly where you keep reaching.</span></div>
+
+    <div class="setupfoot">
+      <button class="btn ghost wide" data-back="1">Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= OVERLAYS ================= -->
+<div id="punch">
+  <svg class="burst" viewBox="-100 -100 200 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <path class="rays" d="M0 0L900.0 0.0L893.3 109.7ZM0 0L869.3 232.9L834.5 337.1ZM0 0L779.4 450.0L718.8 541.6ZM0 0L636.4 636.4L554.1 709.2ZM0 0L450.0 779.4L351.7 828.5ZM0 0L232.9 869.3L125.3 891.2ZM0 0L0.0 900.0L-109.7 893.3ZM0 0L-232.9 869.3L-337.1 834.5ZM0 0L-450.0 779.4L-541.6 718.8ZM0 0L-636.4 636.4L-709.2 554.1ZM0 0L-779.4 450.0L-828.5 351.7ZM0 0L-869.3 232.9L-891.2 125.3ZM0 0L-900.0 0.0L-893.3 -109.7ZM0 0L-869.3 -232.9L-834.5 -337.1ZM0 0L-779.4 -450.0L-718.8 -541.6ZM0 0L-636.4 -636.4L-554.1 -709.2ZM0 0L-450.0 -779.4L-351.7 -828.5ZM0 0L-232.9 -869.3L-125.3 -891.2ZM0 0L-0.0 -900.0L109.7 -893.3ZM0 0L232.9 -869.3L337.1 -834.5ZM0 0L450.0 -779.4L541.6 -718.8ZM0 0L636.4 -636.4L709.2 -554.1ZM0 0L779.4 -450.0L828.5 -351.7ZM0 0L869.3 -232.9L891.2 -125.3Z">
+      <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="26s" repeatCount="indefinite"/>
+    </path>
+  </svg>
+  <div class="punchwrap">
+    <div class="punchname" id="punchName"></div>
+    <div class="punchsub" id="punchSub">is stuck with her</div>
+    <div class="punchcard" id="punchCard"></div>
+  </div>
+  <div class="punchtap">tap to carry on</div>
+</div>
+
+<div id="flash"><div class="fin">
+  <div class="fsuits">&#9824;<span class="r">&#9829;</span><span class="r">&#9830;</span>&#9827;</div>
+  <div class="fbig" id="flashBig"></div>
+  <div class="fsub" id="flashSub"></div>
+</div></div>
+
+<div id="vtag">v1.0.1</div>
+<div id="toast"></div>
+
+<script>
+// === ENGINE START ===
+/* ============================================================
+   SCABBY : FANNY v1.0.1 — game engine (pure logic, no DOM)
+   Old Maid on 49 cards: three queens pulled, Q of hearts orphaned.
+   24 pairs + her. Cards flow one way round the table — you draw
+   from your right, you offer to your left.
+   ============================================================ */
+(function (root) {
+'use strict';
+
+var SUITS = ['S', 'H', 'D', 'C'];
+var SUIT_SYM = { S: '♠', H: '♥', D: '♦', C: '♣' };
+var SUIT_RED = { H: true, D: true };
+var DECK_SIZE = 49;
+
+/* How the CPUs behave, 1 daft to 5 shark.
+   shuffle   — chance of re-fanning before offering
+   tell      — chance of visibly twitching on the queen
+   falseTell — chance of twitching on an innocent card instead
+   read      — how likely they are to spot a tell coming off you
+   edgeQueen — habit of parking the queen on one end of the fan
+   habit     — uses what it has learnt about where you reach     */
+var DIFF = {
+  1: { name: 'Daft',    shuffle: 0.00, tell: 0.75, falseTell: 0.00, read: 0.00, edgeQueen: 1.00, habit: 0 },
+  2: { name: 'Slack',   shuffle: 0.28, tell: 0.50, falseTell: 0.00, read: 0.12, edgeQueen: 0.60, habit: 0 },
+  3: { name: 'Regular', shuffle: 0.72, tell: 0.28, falseTell: 0.06, read: 0.30, edgeQueen: 0.25, habit: 0 },
+  4: { name: 'Sharp',   shuffle: 1.00, tell: 0.10, falseTell: 0.14, read: 0.52, edgeQueen: 0.00, habit: 0.5 },
+  5: { name: 'Shark',   shuffle: 1.00, tell: 0.00, falseTell: 0.26, read: 0.76, edgeQueen: 0.00, habit: 1 }
+};
+
+function rankLabel(r) {
+  return r === 14 ? 'A' : r === 13 ? 'K' : r === 12 ? 'Q' : r === 11 ? 'J' : String(r);
+}
+function isQueen(c) { return c.r === 12; }          /* only one left in the deck */
+
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function shuffleArr(a, rng) {
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(rng() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+/* Every rank keeps all four suits except the queens, where only hearts survives. */
+function makeDeck() {
+  var d = [], id = 0, si, r, s;
+  for (si = 0; si < 4; si++) {
+    s = SUITS[si];
+    for (r = 2; r <= 14; r++) {
+      if (r === 12 && s !== 'H') continue;
+      d.push({ id: id++, r: r, s: s });
+    }
+  }
+  return d;
+}
+
+function newGame(o) {
+  var n = o.names.length, i;
+  var st = {
+    n: n,
+    names: o.names.slice(),
+    mode: o.mode || 'cpu',
+    human: (o.human == null ? -1 : o.human),     /* -1 in pass mode: they are all human */
+    levels: o.levels || [],
+    dealer: o.dealer || 0,
+    hands: [], discards: [],
+    offerer: 0, drawer: 0,
+    phase: 'deal',
+    over: false, loser: -1,
+    turns: 0,
+    rng: mulberry32(o.seed != null ? o.seed : (Date.now() >>> 0))
+  };
+  for (i = 0; i < n; i++) { st.hands.push([]); st.discards.push([]); }
+
+  var deck = shuffleArr(makeDeck(), st.rng);
+  var k = (st.dealer + 1) % n;
+  while (deck.length) { st.hands[k].push(deck.pop()); k = (k + 1) % n; }
+
+  st.offerer = st.dealer;
+  st.drawer = nextActive(st, st.dealer);
+  return st;
+}
+
+function cardsLeft(st) {
+  var t = 0, i;
+  for (i = 0; i < st.n; i++) t += st.hands[i].length;
+  return t;
+}
+function pairsLeft(st) { return (cardsLeft(st) - 1) / 2; }
+
+function nextActive(st, from) {
+  var i, s;
+  for (i = 1; i <= st.n; i++) {
+    s = (from + i) % st.n;
+    if (s !== from && st.hands[s].length) return s;
+  }
+  return -1;
+}
+function prevActive(st, from) {
+  var i, s;
+  for (i = 1; i <= st.n; i++) {
+    s = ((from - i) % st.n + st.n) % st.n;
+    if (s !== from && st.hands[s].length) return s;
+  }
+  return -1;
+}
+
+/* every pair sitting in a hand, as index couples */
+function pairsIn(hand) {
+  var byRank = {}, out = [], i, r, k;
+  for (i = 0; i < hand.length; i++) {
+    r = hand[i].r;
+    (byRank[r] = byRank[r] || []).push(i);
+  }
+  for (k in byRank) {
+    if (!byRank.hasOwnProperty(k)) continue;
+    var g = byRank[k];
+    for (i = 0; i + 1 < g.length; i += 2) out.push([g[i], g[i + 1]]);
+  }
+  return out;
+}
+function hasPair(hand) { return pairsIn(hand).length > 0; }
+function queenIdx(hand) {
+  for (var i = 0; i < hand.length; i++) if (isQueen(hand[i])) return i;
+  return -1;
+}
+
+/* Throw one pair out. Indices must be a genuine match. */
+function discardPair(st, seat, i, j) {
+  var h = st.hands[seat];
+  if (i === j || !h[i] || !h[j] || h[i].r !== h[j].r) return null;
+  var a = Math.max(i, j), b = Math.min(i, j);
+  var c1 = h.splice(a, 1)[0], c2 = h.splice(b, 1)[0];
+  st.discards[seat].push(c2, c1);
+  checkOver(st);
+  return [c2, c1];
+}
+/* Clear the lot — used for CPUs and for the optional hands-off setting. */
+function autoDiscard(st, seat) {
+  var got = [], p;
+  for (;;) {
+    p = pairsIn(st.hands[seat]);
+    if (!p.length) break;
+    var d = discardPair(st, seat, p[0][0], p[0][1]);
+    if (!d) break;
+    got.push(d);
+  }
+  return got;
+}
+
+/* The draw. idx is a position in the offerer's fan; the card goes into the
+   drawer's hand at insertAt (they choose where, same as squaring up a fan). */
+function drawCard(st, idx, insertAt) {
+  var fan = st.hands[st.offerer];
+  if (idx < 0 || idx >= fan.length) return null;
+  var c = fan.splice(idx, 1)[0];
+  var h = st.hands[st.drawer];
+  var at = (insertAt == null) ? h.length : Math.max(0, Math.min(h.length, insertAt));
+  h.splice(at, 0, c);
+  st.turns++;
+  checkOver(st);
+  return { card: c, at: at };
+}
+
+/* Whoever just drew becomes the next offerer — unless they went out, in which
+   case the seat before them offers again and play skips over the empty chair. */
+function afterTurn(st) {
+  if (st.over) return;
+  var prev = st.offerer, d = st.drawer, no;
+  if (st.hands[d].length) no = d;
+  else if (st.hands[prev].length) no = prev;
+  else no = prevActive(st, d);
+  if (no < 0) { checkOver(st); return; }
+  st.offerer = no;
+  st.drawer = nextActive(st, no);
+  if (st.drawer < 0) checkOver(st);
+}
+
+function checkOver(st) {
+  if (st.over) return true;
+  if (cardsLeft(st) > 1) return false;
+  st.over = true;
+  st.loser = -1;
+  for (var i = 0; i < st.n; i++) if (st.hands[i].length) { st.loser = i; break; }
+  st.phase = 'over';
+  return true;
+}
+
+/* Called once the dealt pairs are out. A hand can pair off to nothing on the
+   deal, so the first offerer and drawer have to be settled here rather than
+   assumed — otherwise somebody ends up offering an empty fan. */
+function startPlay(st) {
+  var d0 = nextActive(st, st.dealer);
+  if (d0 < 0) { checkOver(st); return; }
+  st.drawer = d0;
+  st.offerer = prevActive(st, d0);
+  if (st.offerer < 0) { checkOver(st); return; }
+  st.phase = 'draw';
+}
+
+function shuffleFan(st, seat) { shuffleArr(st.hands[seat], st.rng); }
+function sortHand(st, seat) {
+  st.hands[seat].sort(function (a, b) { return (a.r - b.r) || (a.s < b.s ? -1 : 1); });
+}
+
+/* ---------- the CPUs ----------
+   Drawing is blind, so there is nothing clever to do there beyond reading a
+   tell and having a habit. The real decisions are on the offer: shuffle or
+   not, where the queen sits, and whether you give it away.               */
+
+function cpuDrawIndex(st, level, tellIdx) {
+  var m = st.hands[st.offerer].length, rng = st.rng, pool = [], i, w, tot = 0, x;
+  if (!m) return -1;
+  for (i = 0; i < m; i++) {
+    if (i === tellIdx && m > 1) continue;
+    if (level <= 1) w = (i < 2) ? 4 : 1;                       /* grabs the nearest */
+    else if (level === 2) w = 1;
+    else w = (i === 0 || i === m - 1) ? 0.65 : 1;              /* shies off the ends */
+    pool.push([i, w]); tot += w;
+  }
+  if (!pool.length) return 0;
+  x = rng() * tot;
+  for (i = 0; i < pool.length; i++) { x -= pool[i][1]; if (x <= 0) return pool[i][0]; }
+  return pool[pool.length - 1][0];
+}
+
+/* Square the fan up ready to offer. Returns what leaked. habit is the running
+   average of where the player on the left tends to reach, 0..1. */
+function cpuArrange(st, seat, level, habit) {
+  var cfg = DIFF[level] || DIFF[3], rng = st.rng, hand = st.hands[seat];
+  var res = { shuffled: false, tellIdx: -1 };
+  if (rng() < cfg.shuffle) { shuffleArr(hand, rng); res.shuffled = true; }
+  var m = hand.length, qi = queenIdx(hand), target = -1, f;
+  if (qi < 0 || m < 2) return res;
+  if (cfg.habit > 0 && habit && habit.n >= 2 && rng() < cfg.habit) {
+    target = Math.round(habit.sum / habit.n * (m - 1));
+  } else if (rng() < cfg.edgeQueen) {
+    target = (rng() < 0.5) ? 0 : m - 1;
+  }
+  if (target >= 0 && target !== qi) {
+    hand.splice(target, 0, hand.splice(qi, 1)[0]);
+    qi = target;
+  }
+  if (rng() < cfg.tell) res.tellIdx = qi;
+  else if (rng() < cfg.falseTell) { f = Math.floor(rng() * m); if (f !== qi) res.tellIdx = f; }
+  return res;
+}
+
+/* What the human is giving away. An unshuffled queen on either end of the fan
+   is the classic one; so is sitting there stewing over it. */
+function humanLeak(st, seat, shuffledThisTurn, dwellMs) {
+  var hand = st.hands[seat], qi = queenIdx(hand), p = 0;
+  if (qi < 0 || hand.length < 2) return { p: 0, idx: -1 };
+  p = 0.08;
+  if (!shuffledThisTurn && (qi === 0 || qi === hand.length - 1)) p += 0.55;
+  if (dwellMs > 6000) p += 0.30;
+  return { p: Math.min(p, 0.85), idx: qi };
+}
+
+root.SUITS = SUITS; root.SUIT_SYM = SUIT_SYM; root.SUIT_RED = SUIT_RED;
+root.DIFF = DIFF; root.DECK_SIZE = DECK_SIZE;
+root.rankLabel = rankLabel; root.isQueen = isQueen;
+root.mulberry32 = mulberry32; root.shuffleArr = shuffleArr; root.makeDeck = makeDeck;
+root.newGame = newGame; root.cardsLeft = cardsLeft; root.pairsLeft = pairsLeft;
+root.nextActive = nextActive; root.prevActive = prevActive;
+root.pairsIn = pairsIn; root.hasPair = hasPair; root.queenIdx = queenIdx;
+root.discardPair = discardPair; root.autoDiscard = autoDiscard;
+root.drawCard = drawCard; root.afterTurn = afterTurn; root.checkOver = checkOver;
+root.startPlay = startPlay; root.shuffleFan = shuffleFan; root.sortHand = sortHand;
+root.cpuDrawIndex = cpuDrawIndex; root.cpuArrange = cpuArrange; root.humanLeak = humanLeak;
+
+})(typeof module !== 'undefined' && module.exports ? module.exports : (window.SF = {}));
+// === ENGINE END ===
+
+/* ============================================================
+   UI
+   ============================================================ */
+var E = window.SF;
+var VERSION = '1.0.1';
+
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+var toastT = null;
+function toast(t) {
+  var el = $('toast');
+  el.textContent = t; el.classList.add('on');
+  clearTimeout(toastT);
+  toastT = setTimeout(function () { el.classList.remove('on'); }, 1900);
+}
+function show(id) {
+  var s = document.querySelectorAll('.screen'), i;
+  for (i = 0; i < s.length; i++) s[i].classList.toggle('on', s[i].id === id);
+  window.scrollTo(0, 0);
+}
+var SUIT_NAME = { S: 'spades', H: 'hearts', D: 'diamonds', C: 'clubs' };
+var RANK_NAME = { 14: 'Ace', 13: 'King', 12: 'Queen', 11: 'Jack' };
+function cardLabel(c) { return (RANK_NAME[c.r] || c.r) + ' of ' + SUIT_NAME[c.s]; }
+
+/* ---------- card renderer (same pip layout as NOMS) ---------- */
+var PIPS = {
+  2: [[50, 22], [50, 78, 1]],
+  3: [[50, 22], [50, 50], [50, 78, 1]],
+  4: [[33, 22], [67, 22], [33, 78, 1], [67, 78, 1]],
+  5: [[33, 22], [67, 22], [50, 50], [33, 78, 1], [67, 78, 1]],
+  6: [[33, 22], [67, 22], [33, 50], [67, 50], [33, 78, 1], [67, 78, 1]],
+  7: [[33, 22], [67, 22], [50, 36], [33, 50], [67, 50], [33, 78, 1], [67, 78, 1]],
+  8: [[33, 22], [67, 22], [50, 36], [33, 50], [67, 50], [50, 64, 1], [33, 78, 1], [67, 78, 1]],
+  9: [[33, 20], [67, 20], [33, 41], [67, 41], [50, 50], [33, 59, 1], [67, 59, 1], [33, 80, 1], [67, 80, 1]],
+  10: [[33, 20], [67, 20], [50, 30], [33, 41], [67, 41], [33, 59, 1], [67, 59, 1], [50, 70, 1], [33, 80, 1], [67, 80, 1]]
+};
+function cardFaceHTML(c) {
+  var sym = E.SUIT_SYM[c.s], rl = E.rankLabel(c.r);
+  var h = '<span class="corner"><b>' + rl + '</b><i>' + sym + '</i></span>';
+  if (c.r === 14) {
+    h += '<span class="apip' + (c.s === 'S' ? ' asp' : '') + '">' + sym + '</span>';
+  } else if (c.r >= 11) {
+    h += '<span class="court"><span class="cl">' + rl + '</span><span class="cs">' + sym + '</span></span>';
+  } else {
+    var pp = PIPS[c.r], i;
+    for (i = 0; i < pp.length; i++) {
+      h += '<span class="pip' + (pp[i][2] ? ' f' : '') + '" style="left:' + pp[i][0] + '%;top:' + pp[i][1] + '%">' + sym + '</span>';
+    }
+  }
+  h += '<span class="corner br"><b>' + rl + '</b><i>' + sym + '</i></span>';
+  return h;
+}
+function cardEl(c) {
+  var el = document.createElement('div');
+  el.className = 'card' + (E.SUIT_RED[c.s] ? ' red' : '');
+  el.innerHTML = cardFaceHTML(c);
+  el.setAttribute('aria-label', cardLabel(c));
+  return el;
+}
+function backEl() {
+  var el = document.createElement('div');
+  el.className = 'card back';
+  el.setAttribute('aria-hidden', 'true');
+  return el;
+}
+/* Lay a fan out so it always fits the screen it is on.
+   Heads up you can be holding 24 cards, which will not go across a phone in
+   one line, so the fan breaks into rows — and every card keeps at least
+   MIN_STEP of itself showing, because that sliver is the thumb target. Cards
+   later in the fan sit on top, so the exposed strip is the left-hand edge. */
+function layoutFan(host, count, opts, build) {
+  host.innerHTML = '';
+  if (!count) return;
+  var W = Math.max(210, (host.clientWidth || window.innerWidth || 360) - 6);
+  var cw = Math.round(Math.max(opts.min, Math.min(opts.max, W * opts.frac)));
+  var minStep = opts.step;
+
+  var perRow = Math.max(3, Math.floor((W - cw) / minStep) + 1);
+  perRow = Math.min(perRow, count);
+  var rows = Math.max(1, Math.ceil(count / perRow));
+  perRow = Math.ceil(count / rows);
+
+  var step = perRow > 1 ? Math.min(cw * 0.8, (W - cw) / (perRow - 1)) : cw;
+  var i = 0, r, k, row, el;
+  for (r = 0; r < rows && i < count; r++) {
+    row = document.createElement('div');
+    row.className = 'fanrow';
+    row.style.setProperty('--cw', cw + 'px');
+    for (k = 0; k < perRow && i < count; k++, i++) {
+      el = build(i);
+      if (k) el.style.marginLeft = Math.round(step - cw) + 'px';
+      el.style.zIndex = String(10 + k);
+      row.appendChild(el);
+    }
+    host.appendChild(row);
+  }
+}
+
+/* ---------- app state ---------- */
+var theme = 'neon';
+var st = null;
+var turnT = null;                       /* the CPU driver timer */
+/* No crew is baked in — every name is typed on the setup screen. The two
+   modes keep their own list so swapping between them does not wipe either. */
+var setup = { size: 4, diff: 3, auto: false, names: [] };
+var pass = { size: 4, dealer: 0, auto: false, names: [] };
+var ui = {
+  sel: -1,            /* index selected in your hand */
+  tellIdx: -1,        /* index twitching in the offered fan */
+  stage: 'draw',      /* draw | discard | offer */
+  shuffled: false,    /* have they re-fanned since their last draw */
+  offerT0: 0,
+  lastDrawn: -1,      /* index in your hand of the card you just took */
+  habits: [],         /* per seat: where the player on their left reaches */
+  drawnFlash: null
+};
+
+function applyTheme() {
+  document.body.classList.toggle('theme-felt', theme === 'felt');
+  var b = $('themeRow').querySelectorAll('button'), i;
+  for (i = 0; i < b.length; i++) b[i].classList.toggle('sel', b[i].dataset.th === theme);
+}
+function stopTimers() { clearTimeout(turnT); turnT = null; }
+function resetToTitle() { stopTimers(); st = null; show('scr-title'); }
+
+/* ============================================================
+   SETUP
+   ============================================================ */
+/* A blank seat just goes by its number, so nobody has to fill all seven in. */
+function nameAt(store, i) {
+  var v = (store[i] || '').trim();
+  return v || ('Player ' + (i + 1));
+}
+function buildNameRows(hostId, count, store, youSeat, after) {
+  var host = $(hostId), i;
+  host.innerHTML = '';
+  for (i = 0; i < count; i++) {
+    (function (k) {
+      var row = document.createElement('div');
+      row.className = 'prow' + (k === youSeat ? ' sel' : '');
+      var badge = document.createElement('div');
+      badge.className = 'obadge' + (k === youSeat ? ' me' : '');
+      badge.textContent = (k === youSeat) ? 'you' : String(k + 1);
+      var inp = document.createElement('input');
+      inp.type = 'text';
+      inp.value = store[k] || '';
+      inp.maxLength = 12;
+      inp.placeholder = 'Player ' + (k + 1);
+      inp.setAttribute('aria-label', 'Name for seat ' + (k + 1));
+      inp.oninput = function () { store[k] = inp.value; if (after) after(); };
+      row.appendChild(badge);
+      row.appendChild(inp);
+      host.appendChild(row);
+    })(i);
+  }
+}
+function diffHint() {
+  var d = E.DIFF[setup.diff];
+  var lines = {
+    1: 'Never shuffles and telegraphs the queen nearly every time.',
+    2: 'Shuffles now and again. Leaks about half the time.',
+    3: 'Shuffles most offers, the odd tell, will bluff one occasionally.',
+    4: 'Shuffles every time, barely leaks, and notices when you do.',
+    5: 'Never leaks. Learns where you reach and plants her there.'
+  };
+  $('diffHint').textContent = setup.diff + ' — ' + d.name + ': ' + lines[setup.diff];
+}
+function buildCPUSetup() {
+  $('sizeVal').textContent = setup.size;
+  buildNameRows('cpuRows', setup.size, setup.names, 0, null);
+  var b = $('diffSeg').querySelectorAll('button'), i;
+  for (i = 0; i < b.length; i++) b[i].classList.toggle('sel', +b[i].dataset.d === setup.diff);
+  $('autoBox').checked = setup.auto;
+  diffHint();
+}
+/* Rebuilding the rows on every keystroke would kick the keyboard out from
+   under them, so the dealer chips refresh on their own. */
+function buildPassSetup() {
+  $('passVal').textContent = pass.size;
+  buildNameRows('passRows', pass.size, pass.names, -1, buildDealerChips);
+  $('autoBox2').checked = pass.auto;
+  buildDealerChips();
+}
+function buildDealerChips() {
+  var host = $('dealerChips'), i;
+  host.innerHTML = '';
+  if (pass.dealer >= pass.size) pass.dealer = 0;
+  for (i = 0; i < pass.size; i++) {
+    (function (k) {
+      var b = document.createElement('button');
+      b.className = 'chipbtn' + (pass.dealer === k ? ' sel' : '');
+      b.textContent = nameAt(pass.names, k);
+      b.onclick = function () { pass.dealer = k; buildDealerChips(); };
+      host.appendChild(b);
+    })(i);
+  }
+}
+
+/* ============================================================
+   STARTING A GAME
+   ============================================================ */
+function startCPU() {
+  var names = [], levels = [], i;
+  for (i = 0; i < setup.size; i++) { names.push(nameAt(setup.names, i)); levels.push(setup.diff); }
+  st = E.newGame({ names: names, mode: 'cpu', human: 0, levels: levels, dealer: 0 });
+  st.auto = setup.auto;
+  beginDeal();
+}
+function startPass() {
+  var names = [], i;
+  for (i = 0; i < pass.size; i++) names.push(nameAt(pass.names, i));
+  var dealerSeat = (pass.dealer >= 0 && pass.dealer < pass.size) ? pass.dealer : 0;
+  st = E.newGame({ names: names, mode: 'pass', human: -1, dealer: dealerSeat });
+  st.auto = pass.auto;
+  beginDeal();
+}
+function isHuman(seat) { return st.mode === 'pass' || seat === st.human; }
+
+/* ---------- the deal, round the table ---------- */
+function stadiumPoint(k, ratio, inset) {
+  var H = 1 - 2 * inset, W = ratio - 2 * inset;
+  var r = H / 2, L = W - H;
+  var P = 2 * L + 2 * Math.PI * r;
+  var s = (((k % 1) + 1) % 1) * P;
+  var x, y, a;
+  if (s < L / 2) { x = s; y = -r; }
+  else if (s < L / 2 + Math.PI * r) { a = (s - L / 2) / r - Math.PI / 2; x = L / 2 + r * Math.cos(a); y = r * Math.sin(a); }
+  else if (s < L / 2 + Math.PI * r + L) { x = L / 2 - (s - (L / 2 + Math.PI * r)); y = r; }
+  else if (s < L / 2 + 2 * Math.PI * r + L) { a = (s - (L / 2 + Math.PI * r + L)) / r + Math.PI / 2; x = -L / 2 + r * Math.cos(a); y = r * Math.sin(a); }
+  else { x = -L / 2 + (s - (L / 2 + 2 * Math.PI * r + L)); y = -r; }
+  return { x: 50 + (x / ratio) * 100, y: 50 + y * 100 };
+}
+function seatTable(names, hostId, youSeat) {
+  var host = $(hostId), n = names.length, RATIO = 1.85, c, q, cup;
+  host.innerHTML = '';
+  names.forEach(function (nm, i) {
+    var p = stadiumPoint(i / n, RATIO, 0.055);
+    var d = document.createElement('div');
+    d.className = 'tseat' + (i === youSeat ? ' you' : '');
+    d.id = 'ts' + i;
+    d.style.left = p.x + '%'; d.style.top = p.y + '%';
+    d.innerHTML = '<span class="tn">' + esc(nm) + '</span>';
+    host.appendChild(d);
+  });
+  var tbl = $('dealTable'), old = tbl.querySelectorAll('.cup');
+  for (c = 0; c < old.length; c++) old[c].parentNode.removeChild(old[c]);
+  for (c = 0; c < 8; c++) {
+    q = stadiumPoint(c / 8 + 1 / 16, RATIO, 0.21);
+    cup = document.createElement('div');
+    cup.className = 'cup';
+    cup.style.left = q.x + '%'; cup.style.top = q.y + '%';
+    tbl.appendChild(cup);
+  }
+}
+function beginDeal() {
+  ui.habits = [];
+  for (var i = 0; i < st.n; i++) ui.habits.push({ sum: 0, n: 0 });
+  show('scr-deal');
+  seatTable(st.names, 'dealSeats', st.human);
+  $('dealSub').textContent = 'Three queens out. The Queen of Hearts stays in.';
+  $('dealMsg').innerHTML = '&nbsp;';
+  $('dealSlot').innerHTML = '';
+
+  /* a quick shuffle, then cards flick round the table */
+  var slot = $('dealSlot'), k;
+  var sh = document.createElement('div');
+  sh.className = 'shuffling';
+  for (k = 0; k < 5; k++) sh.appendChild(backEl());
+  slot.appendChild(sh);
+  turnT = setTimeout(function () {
+    slot.innerHTML = '';
+    var seat = (st.dealer + 1) % st.n, dealt = 0;
+    (function step() {
+      var seats = $('dealSeats').querySelectorAll('.tseat'), j;
+      for (j = 0; j < seats.length; j++) seats[j].classList.remove('hot');
+      var ts = $('ts' + seat);
+      if (ts) ts.classList.add('hot');
+      slot.innerHTML = '';
+      var b = backEl(); b.classList.add('dealin');
+      slot.appendChild(b);
+      dealt++;
+      $('dealMsg').textContent = dealt + ' of ' + E.DECK_SIZE + ' out';
+      seat = (seat + 1) % st.n;
+      if (dealt < 14) turnT = setTimeout(step, 90);
+      else turnT = setTimeout(afterDeal, 320);
+    })();
+  }, 900);
+}
+function afterDeal() {
+  /* everyone throws their dealt pairs out before a card is drawn */
+  var i;
+  for (i = 0; i < st.n; i++) if (!isHuman(i)) E.autoDiscard(st, i);
+  if (st.mode === 'cpu') {
+    if (st.auto) E.autoDiscard(st, st.human);
+    E.checkOver(st);
+    if (st.over) { show('scr-play'); renderAll(); return finishGame(); }
+    var mustClear = E.hasPair(st.hands[st.human]) && !st.auto;
+    ui.stage = mustClear ? 'clear' : 'cpu';
+    var firstDrawer = E.nextActive(st, st.dealer);
+    var sub = st.names[st.dealer] + ' deals' +
+      (firstDrawer >= 0 ? ' — ' + st.names[firstDrawer] + ' draws first' : '');
+    flash('Dealt', sub, function () {
+      show('scr-play');
+      if (mustClear) { renderAll(); }
+      else { E.startPlay(st); beginTurn(); }
+    });
+  } else {
+    /* pass mode: everyone clears their own dealt pairs, in seat order */
+    st.clearSeat = (st.dealer + 1) % st.n;
+    st.clearing = true;
+    flash('Dealt', 'Clear your dealt pairs, starting left of ' + st.names[st.dealer], function () { nextClearSeat(); });
+  }
+}
+function nextClearSeat() {
+  if (st.auto) {
+    for (var i = 0; i < st.n; i++) E.autoDiscard(st, i);
+    st.clearing = false;
+    return startPassPlay();
+  }
+  var seat = st.clearSeat;
+  if (!E.hasPair(st.hands[seat])) {
+    st.clearSeat = (seat + 1) % st.n;
+    if (st.clearSeat === (st.dealer + 1) % st.n) { st.clearing = false; return startPassPlay(); }
+    return nextClearSeat();
+  }
+  curtainTo(seat, 'Throw out the pairs you were dealt', function () {
+    ui.stage = 'clear';
+    ui.sel = -1;
+    show('scr-play');
+    renderAll();
+  });
+}
+function startPassPlay() {
+  E.startPlay(st);
+  if (st.over) { show('scr-play'); renderAll(); return finishGame(); }
+  curtainTo(st.drawer, 'Draw from ' + st.names[st.offerer], beginTurn);
+}
+
+function flash(big, sub, done) {
+  $('flashBig').textContent = big;
+  $('flashSub').textContent = sub || '';
+  var el = $('flash');
+  el.classList.add('on');
+  turnT = setTimeout(function () { el.classList.remove('on'); if (done) done(); }, 1500);
+}
+function curtainTo(seat, note, done) {
+  $('curtName').textContent = st.names[seat];
+  $('curtNote').textContent = note || '';
+  show('scr-curtain');
+  $('btnCurtGo').onclick = function () { done(); };
+}
+
+/* ============================================================
+   THE TURN LOOP
+   ============================================================ */
+function beginTurn() {
+  if (st.over) return finishGame();
+  if (st.drawer < 0 || st.offerer < 0 || !st.hands[st.offerer].length) {
+    E.checkOver(st);
+    return finishGame();
+  }
+  ui.sel = -1;
+  ui.lastDrawn = -1;
+  ui.tellIdx = -1;
+  ui.shuffled = false;
+
+  /* the offerer squares up their fan before holding it out. A human did that
+     themselves on their own offer step, so there is nothing to arrange. */
+  if (!isHuman(st.offerer)) {
+    var res = E.cpuArrange(st, st.offerer, st.levels[st.offerer] || 3, ui.habits[st.offerer]);
+    ui.tellIdx = res.tellIdx;
+  }
+
+  ui.stage = isHuman(st.drawer) ? 'draw' : 'cpu';
+  show('scr-play');
+  renderAll();
+  if (ui.stage === 'cpu') turnT = setTimeout(cpuTurn, 680);
+}
+
+function cpuTurn() {
+  if (st.over) return finishGame();
+  var seat = st.drawer, lvl = st.levels[seat] || 3;
+  var offererIsHuman = isHuman(st.offerer);
+  var tell = -1;
+
+  if (offererIsHuman) {
+    /* did they spot what you were giving away? */
+    var leak = E.humanLeak(st, st.offerer, ui.humanShuffled, ui.humanDwell || 0);
+    if (leak.idx >= 0 && Math.random() < leak.p * (E.DIFF[lvl] || E.DIFF[3]).read) tell = leak.idx;
+  } else {
+    tell = ui.tellIdx;
+  }
+
+  var m = st.hands[st.offerer].length;
+  var idx = E.cpuDrawIndex(st, lvl, tell);
+  if (idx < 0) { E.afterTurn(st); return beginTurn(); }
+
+  /* remember where this seat reaches, so a shark can use it later */
+  var h = ui.habits[st.offerer];
+  if (m > 1) { h.sum += idx / (m - 1); h.n++; }
+
+  var r = E.drawCard(st, idx, Math.floor(Math.random() * (st.hands[seat].length + 1)));
+  setMsg('<b>' + esc(st.names[seat]) + '</b> takes one from ' + esc(st.names[st.offerer]) + '.');
+  renderAll();
+
+  turnT = setTimeout(function () {
+    var got = E.autoDiscard(st, seat);
+    if (got.length) {
+      setMsg('<b>' + esc(st.names[seat]) + '</b> bins ' + got.length + (got.length > 1 ? ' pairs.' : ' pair.'));
+      renderAll();
+    }
+    if (E.checkOver(st)) return finishGame();
+    turnT = setTimeout(function () {
+      E.afterTurn(st);
+      if (st.over) return finishGame();
+      if (st.mode === 'pass' && isHuman(st.drawer)) {
+        curtainTo(st.drawer, 'Draw from ' + st.names[st.offerer], beginTurn);
+      } else {
+        beginTurn();
+      }
+    }, got.length ? 620 : 380);
+  }, 520);
+}
+
+/* ---------- the human's draw ---------- */
+function humanDraw(idx) {
+  if (ui.stage !== 'draw' || st.over) return;
+  var seat = st.drawer, m = st.hands[st.offerer].length;
+  var h = ui.habits[st.offerer];
+  if (m > 1) { h.sum += idx / (m - 1); h.n++; }
+
+  var r = E.drawCard(st, idx, st.hands[seat].length);
+  ui.lastDrawn = r.at;
+  ui.tellIdx = -1;
+  ui.stage = 'discard';
+  ui.sel = -1;
+
+  if (E.isQueen(r.card)) setMsg('You picked up <b>the Queen of Hearts</b>. Keep your face still.');
+  else setMsg('You took the <b>' + cardLabel(r.card) + '</b>.');
+
+  if (st.auto) {
+    var got = E.autoDiscard(st, seat);
+    if (got.length) setMsg('Paired off and binned.');
+  }
+  if (E.checkOver(st)) { renderAll(); return finishGame(); }
+  renderAll();
+}
+
+/* ---------- tapping out a pair ---------- */
+function handTap(i) {
+  if (st.over) return;
+  if (ui.stage === 'draw') { toast('Take a card first'); return; }
+  if (ui.stage === 'offer') { toast('Pairs are done — offer it on'); return; }
+  if (ui.stage !== 'discard' && ui.stage !== 'clear') return;
+  var seat = activeSeat();
+
+  if (ui.sel === -1) { ui.sel = i; renderAll(); return; }
+  if (ui.sel === i) { ui.sel = -1; renderAll(); return; }
+  var hand = st.hands[seat];
+  if (hand[ui.sel].r !== hand[i].r) {
+    toast('Not a pair');
+    ui.sel = i; renderAll(); return;
+  }
+  E.discardPair(st, seat, ui.sel, i);
+  ui.sel = -1;
+  ui.lastDrawn = -1;
+  if (E.checkOver(st)) { renderAll(); return finishGame(); }
+  renderAll();
+}
+
+/* ---------- handing the fan on ---------- */
+function humanOffer() {
+  var seat = st.drawer;
+  if (E.hasPair(st.hands[seat])) { toast('You are still holding a pair'); return; }
+  ui.humanShuffled = ui.shuffled;
+  ui.humanDwell = Date.now() - ui.offerT0;
+  E.afterTurn(st);
+  if (st.over) return finishGame();
+  if (st.mode === 'pass') {
+    curtainTo(st.drawer, 'Draw from ' + st.names[st.offerer], beginTurn);
+  } else {
+    beginTurn();
+  }
+}
+function finishClear() {
+  var seat = activeSeat();
+  if (E.hasPair(st.hands[seat])) { toast('There is still a pair in there'); return; }
+  if (st.mode === 'cpu') {
+    if (E.checkOver(st)) return finishGame();
+    E.startPlay(st);
+    return beginTurn();
+  }
+  st.clearSeat = (seat + 1) % st.n;
+  if (st.clearSeat === (st.dealer + 1) % st.n) { st.clearing = false; return startPassPlay(); }
+  nextClearSeat();
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function setMsg(html) { $('msg').innerHTML = html || '&nbsp;'; }
+
+/* Whose cards sit face up at the bottom of the screen. In CPU mode that is
+   always you — never whichever CPU happens to be taking its turn. */
+function activeSeat() {
+  if (st.mode === 'cpu') return st.human;
+  if (ui.stage === 'clear') return st.clearSeat;
+  return st.drawer;
+}
+function renderTop() {
+  $('cLeft').textContent = E.cardsLeft(st) + ' cards live';
+  var p = E.pairsLeft(st);
+  $('cPairs').textContent = p + (p === 1 ? ' pair left' : ' pairs left');
+}
+function renderSeats() {
+  var host = $('seats'), i;
+  var live = !st.over && ui.stage !== 'clear';
+  host.innerHTML = '';
+  for (i = 0; i < st.n; i++) {
+    var d = document.createElement('div');
+    var out = st.hands[i].length === 0;
+    d.className = 'seat' + (live && i === st.drawer ? ' active' : '') +
+      (live && i === st.offerer ? ' offering' : '') + (out ? ' out' : '');
+    var me = (st.mode === 'cpu' && i === st.human);
+    d.innerHTML = '<div class="snm' + (me ? ' you' : '') + '">' + esc(st.names[i]) + '</div>' +
+      '<div class="snc">' + (out ? 'out ✓' : st.hands[i].length + ' card' + (st.hands[i].length === 1 ? '' : 's')) + '</div>';
+    host.appendChild(d);
+  }
+}
+function renderOffer() {
+  var host = $('offerFan'), lbl = $('offerLbl');
+  var drawing = (ui.stage === 'draw' && isHuman(st.drawer) && !st.over);
+  var fan = st.hands[st.offerer], m = fan.length;
+
+  if (st.over) { host.innerHTML = ''; lbl.innerHTML = '&nbsp;'; return; }
+  if (ui.stage === 'clear') {
+    host.innerHTML = '';
+    lbl.textContent = 'dealt hands — clear your pairs';
+    return;
+  }
+  lbl.textContent = st.names[st.offerer] + ' is offering — ' +
+    (drawing ? 'take one' : st.names[st.drawer] + ' takes one');
+
+  layoutFan(host, m, { min: 40, max: 58, frac: 0.13, step: 30 }, function (i) {
+    var b = backEl();
+    if (i === ui.tellIdx && drawing) b.classList.add('tell');
+    if (drawing) {
+      b.classList.add('pick');
+      b.setAttribute('role', 'button');
+      b.setAttribute('aria-label', 'Take card ' + (i + 1) + ' of ' + m);
+      b.onclick = function () { humanDraw(i); };
+    }
+    return b;
+  });
+}
+function renderHand() {
+  var seat = activeSeat();
+  var hand = st.hands[seat], host = $('hand');
+  var tappable = (ui.stage === 'discard' || ui.stage === 'clear') && !st.over;
+  var selRank = (ui.sel >= 0 && hand[ui.sel]) ? hand[ui.sel].r : null;
+
+  layoutFan(host, hand.length, { min: 44, max: 62, frac: 0.145, step: 32 }, function (i) {
+    var el = cardEl(hand[i]);
+    if (i === ui.sel) { el.classList.add('sel'); el.style.zIndex = '99'; }
+    else if (selRank != null && hand[i].r === selRank) el.classList.add('match');
+    if (i === ui.lastDrawn && ui.stage === 'discard') el.classList.add('flipin');
+    if (tappable) {
+      el.classList.add('tap');
+      el.setAttribute('role', 'button');
+      el.onclick = function () { handTap(i); };
+    }
+    return el;
+  });
+  /* keep the rows from collapsing when the hand empties */
+  if (!hand.length) host.innerHTML = '<div class="fanrow" style="height:56px"></div>';
+}
+function renderMeInfo() {
+  var seat = activeSeat(), hand = st.hands[seat];
+  var bits = [];
+  if (st.mode === 'pass' || ui.stage === 'clear') bits.push('<b>' + esc(st.names[seat]) + '</b>');
+  bits.push(hand.length + ' in hand');
+  var np = E.pairsIn(hand).length;
+  if (np) bits.push(np + (np === 1 ? ' pair to bin' : ' pairs to bin'));
+  if (E.queenIdx(hand) >= 0) bits.push('<span class="warnq">you have her</span>');
+  if (ui.stage === 'offer' && !ui.shuffled) bits.push('fan not shuffled');
+  $('meInfo').innerHTML = bits.join(' &middot; ');
+}
+function renderActions() {
+  var bar = $('actBar'), seat = activeSeat();
+  bar.innerHTML = '';
+  if (st.over) return;
+
+  function mk(label, cls, fn, dis) {
+    var b = document.createElement('button');
+    b.className = 'btn ' + cls;
+    b.textContent = label;
+    b.disabled = !!dis;
+    b.onclick = fn;
+    bar.appendChild(b);
+    return b;
+  }
+  if (ui.stage === 'clear') {
+    mk('Sort', 'ghost sm', function () { E.sortHand(st, seat); ui.sel = -1; renderAll(); });
+    mk('Ready →', '', finishClear, E.hasPair(st.hands[seat]));
+    return;
+  }
+  if (ui.stage === 'draw') {
+    if (isHuman(st.drawer)) mk('Sort', 'ghost sm', function () { E.sortHand(st, st.drawer); renderAll(); });
+    return;
+  }
+  if (ui.stage === 'discard') {
+    mk('Sort', 'ghost sm', function () { E.sortHand(st, seat); ui.sel = -1; ui.lastDrawn = -1; renderAll(); });
+    mk('Done →', '', function () {
+      if (E.hasPair(st.hands[seat])) { toast('You are still holding a pair'); return; }
+      ui.stage = 'offer';
+      ui.offerT0 = Date.now();
+      ui.sel = -1;
+      setMsg('Square your fan up and hold it out to <b>' + esc(st.names[E.nextActive(st, seat)]) + '</b>.');
+      renderAll();
+    }, E.hasPair(st.hands[seat]));
+    return;
+  }
+  if (ui.stage === 'offer') {
+    mk('Shuffle', 'ghost sm', function () {
+      E.shuffleFan(st, seat);
+      ui.shuffled = true;
+      ui.lastDrawn = -1;
+      toast('Re-fanned');
+      renderAll();
+    });
+    mk('Offer →', '', humanOffer);
+  }
+}
+function renderAll() {
+  if (!st) return;
+  renderTop();
+  renderSeats();
+  renderOffer();
+  renderHand();
+  renderMeInfo();
+  renderActions();
+  if (ui.stage === 'draw' && isHuman(st.drawer) && !st.over) {
+    setMsg('Blind pick from <b>' + esc(st.names[st.offerer]) + '</b>. Watch for a twitch.');
+  } else if (ui.stage === 'clear') {
+    setMsg('Throw out every pair you were dealt, two taps at a time.');
+  } else if (ui.stage === 'discard' && !st.over) {
+    if (E.hasPair(st.hands[activeSeat()])) setMsg('Tap the two that match.');
+  }
+}
+
+/* ---------- the reveal ---------- */
+function finishGame() {
+  stopTimers();
+  ui.stage = 'over';
+  renderAll();
+  var seat = st.loser;
+  if (seat < 0) { toast('Nobody got stuck — that should not happen'); return resetToTitle(); }
+  var card = st.hands[seat][0] || { r: 12, s: 'H' };
+  turnT = setTimeout(function () { punch(st.names[seat], card); }, 700);
+}
+function punch(name, card) {
+  $('punchName').textContent = name;
+  $('punchCard').innerHTML = '';
+  $('punchCard').appendChild(cardEl(card));
+  var el = $('punch');
+  el.classList.add('on');
+  var closed = false;
+  el.onclick = function () {
+    if (closed) return;
+    closed = true;
+    el.classList.remove('on');
+    el.onclick = null;
+    resetToTitle();
+  };
+}
+
+/* ============================================================
+   WIRING
+   ============================================================ */
+$('themeRow').onclick = function (e) {
+  var b = e.target.closest ? e.target.closest('button') : null;
+  if (!b || !b.dataset.th) return;
+  theme = b.dataset.th;
+  applyTheme();
+};
+$('btnGoCPU').onclick = function () { buildCPUSetup(); show('scr-setup-cpu'); };
+$('btnGoPass').onclick = function () { buildPassSetup(); show('scr-setup-pass'); };
+$('btnGoRules').onclick = function () { show('scr-rules'); };
+
+var backs = document.querySelectorAll('[data-back]'), bi;
+for (bi = 0; bi < backs.length; bi++) backs[bi].onclick = function () { show('scr-title'); };
+
+$('sizeMinus').onclick = function () { setup.size = Math.max(2, setup.size - 1); buildCPUSetup(); };
+$('sizePlus').onclick = function () { setup.size = Math.min(7, setup.size + 1); buildCPUSetup(); };
+$('diffSeg').onclick = function (e) {
+  var b = e.target.closest ? e.target.closest('button') : null;
+  if (!b || !b.dataset.d) return;
+  setup.diff = +b.dataset.d;
+  buildCPUSetup();
+};
+$('autoBox').onchange = function () { setup.auto = this.checked; };
+$('autoBox2').onchange = function () { pass.auto = this.checked; };
+$('passMinus').onclick = function () { pass.size = Math.max(2, pass.size - 1); buildPassSetup(); };
+$('passPlus').onclick = function () { pass.size = Math.min(7, pass.size + 1); buildPassSetup(); };
+$('btnStartCPU').onclick = startCPU;
+$('btnStartPass').onclick = startPass;
+$('btnQuit').onclick = function () {
+  if (confirm('Leave this game?')) resetToTitle();
+};
+
+applyTheme();
+$('vtag').textContent = 'v' + VERSION;
+buildCPUSetup();
+</script>
+</body>
+</html>

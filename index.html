@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="app-repo" content="StickyFanny">
-<meta name="app-version" content="1.0.0">
-<title>STICKY : FANNY &middot; v1.0.0 &middot; S77FFY</title>
+<meta name="app-repo" content="ScabbyFanny">
+<meta name="app-version" content="1.0.1">
+<title>SCABBY : FANNY &middot; v1.0.1 &middot; S77FFY</title>
 <style>
 /* ============================================================
-   STICKY : FANNY v1.0.0 — S77FFY
+   SCABBY : FANNY v1.0.1 — S77FFY
    Old Maid, crew rules. 49 cards, three queens pulled, the Queen
    of Hearts left without a match. Design lifted from NOMS so the
    two sit together on the Grid.
@@ -133,7 +133,9 @@ body.theme-felt .mark h1{font-family:Georgia,serif;font-weight:400;letter-spacin
 /* player picker, straight out of NOMS */
 .prow{display:flex;align-items:center;gap:10px;padding:7px 0}
 .obadge{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:rgba(244,236,217,.05);
-  font-weight:800;font-size:15px;flex:none;color:var(--bone-dim)}
+  font-weight:800;font-size:15px;flex:none;color:var(--bone-dim);
+  display:inline-flex;align-items:center;justify-content:center}
+.obadge.me{font-size:10px;letter-spacing:.08em;text-transform:uppercase}
 .prow.sel .obadge{border-color:var(--gold);background:rgba(217,169,76,.2);color:var(--gold-hi)}
 .prow input{flex:1;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:10px;color:var(--bone);padding:10px 12px}
 .prow.sel input{border-color:rgba(217,169,76,.5)}
@@ -347,7 +349,7 @@ body.theme-felt .card.back{
 <div id="scr-title" class="screen on">
   <div class="mark">
     <div class="suits">&#9824;<span class="r">&#9829;</span><span class="r">&#9830;</span>&#9827;</div>
-    <h1><span>STICKY</span><span class="col">&#58;</span><span>FANNY</span></h1>
+    <h1><span>SCABBY</span><span class="col">&#58;</span><span>FANNY</span></h1>
     <div class="tagline">don&rsquo;t get left with her</div>
     <div class="themerow" id="themeRow">
       <button data-th="neon" class="sel">Neon</button><button data-th="felt">Felt</button>
@@ -358,21 +360,14 @@ body.theme-felt .card.back{
     <button class="btn ghost wide" id="btnGoPass">Pass the phone</button>
     <button class="btn ghost wide" id="btnGoRules">How it plays</button>
   </div>
-  <div class="foot">STICKY : FANNY v1.0.0 &middot; S77FFY</div>
+  <div class="foot">SCABBY : FANNY v1.0.1 &middot; S77FFY</div>
 </div>
 
 <!-- ================= CPU SETUP ================= -->
 <div id="scr-setup-cpu" class="screen">
   <div class="pad">
     <div class="h2">Play the CPUs</div>
-    <div class="sub">Pick your seat, size up the table, choose how sharp they are.</div>
-
-    <div class="lbl">Who are you?</div>
-    <div class="chips" id="whoChips"></div>
-    <div class="addrow">
-      <input id="newName1" placeholder="Add someone to the crew" maxlength="12">
-      <button id="btnAddName1">Add</button>
-    </div>
+    <div class="sub">Size up the table, write the names in, choose how sharp they are.</div>
 
     <div class="lbl">Table size</div>
     <div class="stepper">
@@ -380,7 +375,11 @@ body.theme-felt .card.back{
       <b id="sizeVal">4</b>
       <button id="sizePlus" aria-label="More players">+</button>
     </div>
-    <div class="hint">You plus CPUs from the crew. 2&ndash;7 at the table.</div>
+    <div class="hint">You plus CPUs. 2&ndash;7 at the table.</div>
+
+    <div class="lbl">Names</div>
+    <div id="cpuRows"></div>
+    <div class="hint">Top seat is you. Leave one blank and it goes by its seat number.</div>
 
     <div class="lbl">CPU difficulty</div>
     <div class="seg" id="diffSeg">
@@ -402,14 +401,19 @@ body.theme-felt .card.back{
 <div id="scr-setup-pass" class="screen">
   <div class="pad">
     <div class="h2">Pass the phone</div>
-    <div class="sub">Real crew, one handset. Tap players in seating order &mdash; it goes round to the left.</div>
+    <div class="sub">One handset round the table. Write everybody in, in seating order.</div>
 
-    <div class="lbl">Tap players in seating order</div>
-    <div id="pickRows"></div>
-    <div class="addrow">
-      <input id="newName2" placeholder="Add someone to the crew" maxlength="12">
-      <button id="btnAddName2">Add</button>
+    <div class="lbl">Players</div>
+    <div class="stepper">
+      <button id="passMinus" aria-label="Fewer players">&minus;</button>
+      <b id="passVal">4</b>
+      <button id="passPlus" aria-label="More players">+</button>
     </div>
+    <div class="hint">2&ndash;7 at the table.</div>
+
+    <div class="lbl">Names, in seating order</div>
+    <div id="passRows"></div>
+    <div class="hint">Seat 1, then whoever is on their left, and so on round.</div>
 
     <div class="lbl">Who deals?</div>
     <div class="chips" id="dealerChips"></div>
@@ -418,7 +422,7 @@ body.theme-felt .card.back{
     <label class="tickrow"><input type="checkbox" id="autoBox2"><span>Clear pairs automatically</span></label>
 
     <div class="setupfoot">
-      <button class="btn wide" id="btnStartPass" disabled>Deal &rarr;</button>
+      <button class="btn wide" id="btnStartPass">Deal &rarr;</button>
       <button class="btn ghost wide" data-back="1">Back</button>
     </div>
   </div>
@@ -528,13 +532,13 @@ body.theme-felt .card.back{
   <div class="fsub" id="flashSub"></div>
 </div></div>
 
-<div id="vtag">v1.0.0</div>
+<div id="vtag">v1.0.1</div>
 <div id="toast"></div>
 
 <script>
 // === ENGINE START ===
 /* ============================================================
-   STICKY : FANNY v1.0.0 — game engine (pure logic, no DOM)
+   SCABBY : FANNY v1.0.1 — game engine (pure logic, no DOM)
    Old Maid on 49 cards: three queens pulled, Q of hearts orphaned.
    24 pairs + her. Cards flow one way round the table — you draw
    from your right, you offer to your left.
@@ -545,7 +549,6 @@ body.theme-felt .card.back{
 var SUITS = ['S', 'H', 'D', 'C'];
 var SUIT_SYM = { S: '♠', H: '♥', D: '♦', C: '♣' };
 var SUIT_RED = { H: true, D: true };
-var CREW = ['Caitlyn', 'Flish', 'Kev', 'Tuffey', 'Ray', 'Jay', 'Stiffy'];
 var DECK_SIZE = 49;
 
 /* How the CPUs behave, 1 daft to 5 shark.
@@ -799,7 +802,7 @@ function humanLeak(st, seat, shuffledThisTurn, dwellMs) {
 }
 
 root.SUITS = SUITS; root.SUIT_SYM = SUIT_SYM; root.SUIT_RED = SUIT_RED;
-root.CREW = CREW; root.DIFF = DIFF; root.DECK_SIZE = DECK_SIZE;
+root.DIFF = DIFF; root.DECK_SIZE = DECK_SIZE;
 root.rankLabel = rankLabel; root.isQueen = isQueen;
 root.mulberry32 = mulberry32; root.shuffleArr = shuffleArr; root.makeDeck = makeDeck;
 root.newGame = newGame; root.cardsLeft = cardsLeft; root.pairsLeft = pairsLeft;
@@ -817,7 +820,7 @@ root.cpuDrawIndex = cpuDrawIndex; root.cpuArrange = cpuArrange; root.humanLeak =
    UI
    ============================================================ */
 var E = window.SF;
-var VERSION = '1.0.0';
+var VERSION = '1.0.1';
 
 function $(id) { return document.getElementById(id); }
 function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -913,12 +916,13 @@ function layoutFan(host, count, opts, build) {
 }
 
 /* ---------- app state ---------- */
-var ROSTER = E.CREW.slice();
 var theme = 'neon';
 var st = null;
 var turnT = null;                       /* the CPU driver timer */
-var setup = { who: 0, size: 4, diff: 3, auto: false };
-var pick = { sel: [], dealer: null, auto: false };
+/* No crew is baked in — every name is typed on the setup screen. The two
+   modes keep their own list so swapping between them does not wipe either. */
+var setup = { size: 4, diff: 3, auto: false, names: [] };
+var pass = { size: 4, dealer: 0, auto: false, names: [] };
 var ui = {
   sel: -1,            /* index selected in your hand */
   tellIdx: -1,        /* index twitching in the offered fan */
@@ -941,16 +945,33 @@ function resetToTitle() { stopTimers(); st = null; show('scr-title'); }
 /* ============================================================
    SETUP
    ============================================================ */
-function buildWhoChips() {
-  var host = $('whoChips');
+/* A blank seat just goes by its number, so nobody has to fill all seven in. */
+function nameAt(store, i) {
+  var v = (store[i] || '').trim();
+  return v || ('Player ' + (i + 1));
+}
+function buildNameRows(hostId, count, store, youSeat, after) {
+  var host = $(hostId), i;
   host.innerHTML = '';
-  ROSTER.forEach(function (nm, i) {
-    var b = document.createElement('button');
-    b.className = 'chipbtn' + (setup.who === i ? ' sel' : '');
-    b.textContent = nm;
-    b.onclick = function () { setup.who = i; buildWhoChips(); };
-    host.appendChild(b);
-  });
+  for (i = 0; i < count; i++) {
+    (function (k) {
+      var row = document.createElement('div');
+      row.className = 'prow' + (k === youSeat ? ' sel' : '');
+      var badge = document.createElement('div');
+      badge.className = 'obadge' + (k === youSeat ? ' me' : '');
+      badge.textContent = (k === youSeat) ? 'you' : String(k + 1);
+      var inp = document.createElement('input');
+      inp.type = 'text';
+      inp.value = store[k] || '';
+      inp.maxLength = 12;
+      inp.placeholder = 'Player ' + (k + 1);
+      inp.setAttribute('aria-label', 'Name for seat ' + (k + 1));
+      inp.oninput = function () { store[k] = inp.value; if (after) after(); };
+      row.appendChild(badge);
+      row.appendChild(inp);
+      host.appendChild(row);
+    })(i);
+  }
 }
 function diffHint() {
   var d = E.DIFF[setup.diff];
@@ -964,87 +985,52 @@ function diffHint() {
   $('diffHint').textContent = setup.diff + ' — ' + d.name + ': ' + lines[setup.diff];
 }
 function buildCPUSetup() {
-  buildWhoChips();
   $('sizeVal').textContent = setup.size;
+  buildNameRows('cpuRows', setup.size, setup.names, 0, null);
   var b = $('diffSeg').querySelectorAll('button'), i;
   for (i = 0; i < b.length; i++) b[i].classList.toggle('sel', +b[i].dataset.d === setup.diff);
   $('autoBox').checked = setup.auto;
   diffHint();
 }
-function buildPickRows() {
-  var host = $('pickRows');
-  host.innerHTML = '';
-  ROSTER.forEach(function (nm, i) {
-    var row = document.createElement('div');
-    var pos = pick.sel.indexOf(i);
-    row.className = 'prow' + (pos !== -1 ? ' sel' : '');
-    var b = document.createElement('button');
-    b.className = 'obadge';
-    b.textContent = pos !== -1 ? (pos + 1) : '+';
-    b.setAttribute('aria-label', (pos !== -1 ? 'Remove ' : 'Add ') + nm);
-    b.onclick = function () {
-      var at = pick.sel.indexOf(i);
-      if (at !== -1) pick.sel.splice(at, 1);
-      else if (pick.sel.length < 7) pick.sel.push(i);
-      else { toast('Seven seats at most'); return; }
-      if (pick.dealer != null && pick.sel.indexOf(pick.dealer) === -1) pick.dealer = null;
-      buildPickRows();
-    };
-    var inp = document.createElement('input');
-    inp.value = nm; inp.id = 'pn' + i; inp.maxLength = 12;
-    inp.onchange = buildDealerChips;
-    row.appendChild(b); row.appendChild(inp);
-    host.appendChild(row);
-  });
+/* Rebuilding the rows on every keystroke would kick the keyboard out from
+   under them, so the dealer chips refresh on their own. */
+function buildPassSetup() {
+  $('passVal').textContent = pass.size;
+  buildNameRows('passRows', pass.size, pass.names, -1, buildDealerChips);
+  $('autoBox2').checked = pass.auto;
   buildDealerChips();
 }
-function pickName(i) {
-  var v = $('pn' + i) ? $('pn' + i).value.trim() : '';
-  return v || ROSTER[i];
-}
 function buildDealerChips() {
-  var host = $('dealerChips');
+  var host = $('dealerChips'), i;
   host.innerHTML = '';
-  if (pick.dealer == null && pick.sel.length) pick.dealer = pick.sel[0];
-  pick.sel.forEach(function (i) {
-    var b = document.createElement('button');
-    b.className = 'chipbtn' + (pick.dealer === i ? ' sel' : '');
-    b.textContent = pickName(i);
-    b.onclick = function () { pick.dealer = i; buildDealerChips(); };
-    host.appendChild(b);
-  });
-  $('btnStartPass').disabled = !(pick.sel.length >= 2 && pick.dealer != null);
-}
-function addName(inputId, after) {
-  var v = $(inputId).value.trim();
-  if (!v) return;
-  if (ROSTER.length >= 12) { toast('That is plenty of names'); return; }
-  if (ROSTER.indexOf(v) === -1) ROSTER.push(v);
-  $(inputId).value = '';
-  after();
+  if (pass.dealer >= pass.size) pass.dealer = 0;
+  for (i = 0; i < pass.size; i++) {
+    (function (k) {
+      var b = document.createElement('button');
+      b.className = 'chipbtn' + (pass.dealer === k ? ' sel' : '');
+      b.textContent = nameAt(pass.names, k);
+      b.onclick = function () { pass.dealer = k; buildDealerChips(); };
+      host.appendChild(b);
+    })(i);
+  }
 }
 
 /* ============================================================
    STARTING A GAME
    ============================================================ */
 function startCPU() {
-  var names = [ROSTER[setup.who]], i;
-  for (i = 0; i < ROSTER.length && names.length < setup.size; i++) {
-    if (i !== setup.who) names.push(ROSTER[i]);
-  }
-  while (names.length < setup.size) names.push('CPU ' + names.length);
-  var levels = [];
-  for (i = 0; i < names.length; i++) levels.push(setup.diff);
+  var names = [], levels = [], i;
+  for (i = 0; i < setup.size; i++) { names.push(nameAt(setup.names, i)); levels.push(setup.diff); }
   st = E.newGame({ names: names, mode: 'cpu', human: 0, levels: levels, dealer: 0 });
   st.auto = setup.auto;
   beginDeal();
 }
 function startPass() {
-  var names = pick.sel.map(pickName);
-  var dealerSeat = pick.sel.indexOf(pick.dealer);
-  if (dealerSeat < 0) dealerSeat = 0;
+  var names = [], i;
+  for (i = 0; i < pass.size; i++) names.push(nameAt(pass.names, i));
+  var dealerSeat = (pass.dealer >= 0 && pass.dealer < pass.size) ? pass.dealer : 0;
   st = E.newGame({ names: names, mode: 'pass', human: -1, dealer: dealerSeat });
-  st.auto = pick.auto;
+  st.auto = pass.auto;
   beginDeal();
 }
 function isHuman(seat) { return st.mode === 'pass' || seat === st.human; }
@@ -1517,7 +1503,7 @@ $('themeRow').onclick = function (e) {
   applyTheme();
 };
 $('btnGoCPU').onclick = function () { buildCPUSetup(); show('scr-setup-cpu'); };
-$('btnGoPass').onclick = function () { buildPickRows(); show('scr-setup-pass'); };
+$('btnGoPass').onclick = function () { buildPassSetup(); show('scr-setup-pass'); };
 $('btnGoRules').onclick = function () { show('scr-rules'); };
 
 var backs = document.querySelectorAll('[data-back]'), bi;
@@ -1532,11 +1518,9 @@ $('diffSeg').onclick = function (e) {
   buildCPUSetup();
 };
 $('autoBox').onchange = function () { setup.auto = this.checked; };
-$('autoBox2').onchange = function () { pick.auto = this.checked; };
-$('btnAddName1').onclick = function () { addName('newName1', buildCPUSetup); };
-$('btnAddName2').onclick = function () { addName('newName2', buildPickRows); };
-$('newName1').onkeydown = function (e) { if (e.key === 'Enter') $('btnAddName1').click(); };
-$('newName2').onkeydown = function (e) { if (e.key === 'Enter') $('btnAddName2').click(); };
+$('autoBox2').onchange = function () { pass.auto = this.checked; };
+$('passMinus').onclick = function () { pass.size = Math.max(2, pass.size - 1); buildPassSetup(); };
+$('passPlus').onclick = function () { pass.size = Math.min(7, pass.size + 1); buildPassSetup(); };
 $('btnStartCPU').onclick = startCPU;
 $('btnStartPass').onclick = startPass;
 $('btnQuit').onclick = function () {
